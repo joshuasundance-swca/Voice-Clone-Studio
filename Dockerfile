@@ -45,6 +45,8 @@ RUN pip install --no-cache-dir \
     torchaudio==2.9.1+cu128 \
     torchvision==0.24.1+cu128
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ADD --chown=1001:1001 --chmod=+x https://astral.sh/uv/install.sh /home/user/uv-installer.sh
+RUN sh /home/user/uv-installer.sh && rm /home/user/uv-installer.sh
 ENV PATH="/home/user/.cargo/bin:${PATH}"
 RUN pip install --no-cache-dir \
     gradio==6.5.0 \
@@ -69,7 +71,10 @@ RUN pip install --no-cache-dir \
     onnxruntime \
     onnxruntime-gpu==1.23.2 \
     markdown==3.10.1 \
-    einops
+    einops \
+    https://github.com/csukuangfj/piper-phonemize/releases/download/2025.06.23/piper_phonemize-1.3.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl \
+    git+https://github.com/ysharma3501/LinaCodec.git \
+    git+https://github.com/ysharma3501/LuxTTS.git
 
 COPY ./requirements.txt /home/user/app/requirements.txt
 RUN pip install --no-cache-dir -r /home/user/app/requirements.txt
