@@ -5873,7 +5873,6 @@ def create_ui():
                             label="Dataset Folder",
                             info="Subfolders in datasets",
                             interactive=True,
-                            value=None,
                         )
 
                         refresh_folder_btn = gr.Button("Refresh Folders", size="sm")
