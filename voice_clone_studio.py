@@ -513,8 +513,6 @@ def get_attention_implementation(user_preference="auto"):
     Determine which attention implementation to use based on user preference and availability.
     Priority order (fastest to slowest): flash_attention_2 → sdpa → eager
 
-    Note: sage_attn is not supported by transformers' attn_implementation parameter.
-
     Args:
         user_preference: "auto", "flash_attention_2", "sdpa", or "eager"
 
@@ -561,15 +559,12 @@ def load_model_with_attention(
             model = model_class.from_pretrained(
                 model_name, attn_implementation=attn, **kwargs
             )
-            print(f"✓ Model loaded with {attn} attention")
+            print(f"✓ Model loaded with {attn}")
             return model, attn
         except Exception as e:
             error_msg = str(e).lower()
             # Check if it's an attention-related error
-            if any(
-                keyword in error_msg
-                for keyword in ["flash", "sage", "attention", "sdpa"]
-            ):
+            if any(keyword in error_msg for keyword in ["flash", "attention", "sdpa"]):
                 print(f"  {attn} not available, trying next option...")
                 continue
             else:
@@ -954,7 +949,7 @@ def get_luxtts_model():
 
 def get_prompt_cache_path(sample_name, model_size="1.7B"):
     """Get the path to the cached voice prompt file."""
-    return SAMPLES_DIR / f"{sample_name}_{model_size}.prompt"
+    return SAMPLES_DIR / f"{sample_name}_{model_size}.pt"
 
 
 def compute_sample_hash(wav_path, ref_text):
@@ -4045,22 +4040,14 @@ def train_model(
     sft_cmd = [
         str(venv_python),
         str(sft_script.absolute()),
-        "--init_model_path",
-        base_model_path,  # Use local path instead of model ID
-        "--output_model_path",
-        str(output_dir),
-        "--train_jsonl",
-        str(train_with_codes_path),
-        "--batch_size",
-        str(int(batch_size)),
-        "--lr",
-        str(learning_rate),
-        "--num_epochs",
-        str(int(num_epochs)),
-        "--save_interval",
-        str(int(save_interval)),
-        "--speaker_name",
-        speaker_name.strip(),
+        "--init_model_path", base_model_path,  # Use local path instead of model ID
+        "--output_model_path", str(output_dir),
+        "--train_jsonl", str(train_with_codes_path),
+        "--batch_size", str(int(batch_size)),
+        "--lr", str(learning_rate),
+        "--num_epochs", str(int(num_epochs)),
+        "--save_interval", str(int(save_interval)),
+        "--speaker_name", speaker_name.strip().lower()
     ]
 
     status_log.append("Training configuration:")
@@ -5881,7 +5868,8 @@ def create_ui():
                         gr.Markdown("### Dataset Files")
 
                         finetune_folder_dropdown = gr.Dropdown(
-                            choices=get_dataset_folders(),
+                            choices=["(Select Dataset)"] + get_dataset_folders(),
+                            value="(Select Dataset)",
                             label="Dataset Folder",
                             info="Subfolders in datasets",
                             interactive=True,
@@ -5963,18 +5951,20 @@ def create_ui():
                             )
 
                         with gr.Column(scale=1):
-                            gr.Markdown("**Batch Transcribe Folder**")
-
-                            batch_replace_existing = gr.Checkbox(
-                                label="Replace existing transcripts", value=False
-                            )
-
-                            batch_transcribe_btn = gr.Button(
-                                "Batch Transcribe", variant="primary", size="lg"
-                            )
+                            gr.Markdown("#### Batch Transcript\nTranscibes entire dataset", container=True)
+                            batch_transcribe_btn = gr.Button("Batch Transcribe", variant="primary", size="lg")
+                            with gr.Row():
+                                batch_replace_existing = gr.Checkbox(
+                                    label="Replace existing transcripts",
+                                    info="If unchecked, only files without transcripts will be processed",
+                                    value=False
+                                )
 
                             finetune_status = gr.Textbox(
-                                label="Status", interactive=False, max_lines=15
+                                label="Status",
+                                interactive=False,
+                                lines=5,
+                                max_lines=15
                             )
 
                             finetune_quick_guide = dedent("""\
