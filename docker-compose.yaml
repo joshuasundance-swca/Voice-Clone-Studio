@@ -11,6 +11,7 @@ services:
       - "NVIDIA_VISIBLE_DEVICES=all"
       - "NVIDIA_DRIVER_CAPABILITIES=compute,utility"
     volumes:
+      - "./models:/home/user/app/models"
       - "./temp:/home/user/app/temp"
       - "./datasets:/home/user/app/datasets"
       - "./samples:/home/user/app/samples"
