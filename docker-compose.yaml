@@ -12,6 +12,7 @@ services:
       - "NVIDIA_DRIVER_CAPABILITIES=compute,utility"
     volumes:
       - "./models:/home/user/app/models"
+      - "./trained_models:/home/user/app/trained_models"
       - "./temp:/home/user/app/temp"
       - "./datasets:/home/user/app/datasets"
       - "./samples:/home/user/app/samples"
