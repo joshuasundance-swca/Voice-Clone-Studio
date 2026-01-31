@@ -3944,7 +3944,9 @@ def train_model(
         return "\n".join(status_log)
 
     # Get venv Python executable
-    venv_python = Path(__file__).parent / "venv" / "Scripts" / "python.exe"
+    # venv_python = Path(__file__).parent / "venv" / "Scripts" / "python.exe"
+    # set venv_python to current python interpreter
+    venv_python = Path(sys.executable)
     if not venv_python.exists():
         status_log.append("❌ Virtual environment not found!")
         status_log.append(f"   Expected at: {venv_python}")
@@ -4040,14 +4042,22 @@ def train_model(
     sft_cmd = [
         str(venv_python),
         str(sft_script.absolute()),
-        "--init_model_path", base_model_path,  # Use local path instead of model ID
-        "--output_model_path", str(output_dir),
-        "--train_jsonl", str(train_with_codes_path),
-        "--batch_size", str(int(batch_size)),
-        "--lr", str(learning_rate),
-        "--num_epochs", str(int(num_epochs)),
-        "--save_interval", str(int(save_interval)),
-        "--speaker_name", speaker_name.strip().lower()
+        "--init_model_path",
+        base_model_path,  # Use local path instead of model ID
+        "--output_model_path",
+        str(output_dir),
+        "--train_jsonl",
+        str(train_with_codes_path),
+        "--batch_size",
+        str(int(batch_size)),
+        "--lr",
+        str(learning_rate),
+        "--num_epochs",
+        str(int(num_epochs)),
+        "--save_interval",
+        str(int(save_interval)),
+        "--speaker_name",
+        speaker_name.strip().lower(),
     ]
 
     status_log.append("Training configuration:")
@@ -4145,11 +4155,14 @@ def create_ui():
         display: none !important;
     }
     #finetune-files-group > div {
-        display: grid !important;
-    }
-    #finetune-files-container {
+        display: flex !important;
+        flex-direction: column !important;
         max-height: 400px;
         overflow-y: auto;
+        padding-right: 6px;
+    }
+    #finetune-files-container {
+        /* Scroll is applied to the Radio choices container above. */
     }
     #finetune-files-group label {
         background: none !important;
@@ -5950,20 +5963,22 @@ def create_ui():
                             )
 
                         with gr.Column(scale=1):
-                            gr.Markdown("#### Batch Transcript\nTranscibes entire dataset", container=True)
-                            batch_transcribe_btn = gr.Button("Batch Transcribe", variant="primary", size="lg")
+                            gr.Markdown(
+                                "#### Batch Transcript\nTranscibes entire dataset",
+                                container=True,
+                            )
+                            batch_transcribe_btn = gr.Button(
+                                "Batch Transcribe", variant="primary", size="lg"
+                            )
                             with gr.Row():
                                 batch_replace_existing = gr.Checkbox(
                                     label="Replace existing transcripts",
                                     info="If unchecked, only files without transcripts will be processed",
-                                    value=False
+                                    value=False,
                                 )
 
                             finetune_status = gr.Textbox(
-                                label="Status",
-                                interactive=False,
-                                lines=5,
-                                max_lines=15
+                                label="Status", interactive=False, lines=5, max_lines=15
                             )
 
                             finetune_quick_guide = dedent("""\
